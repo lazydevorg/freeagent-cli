@@ -26,14 +26,19 @@ func Authenticate() *oauth2.Token {
 	callbackHandler.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
 		state2 := r.FormValue("state")
 		if state2 != state {
-			log.Fatalln("Authentication failed: 'randomState' value is incorrect")
+			http.Error(w, "Authentication failed: 'state' value is incorrect", http.StatusInternalServerError)
+			close(tokenChan)
+			return
 		}
 
 		code := r.FormValue("code")
 		token, err := oAuthConfig.Exchange(r.Context(), code)
 		if err != nil {
-			log.Fatalln("Authentication failed:", err)
+			http.Error(w, "Authentication failed: "+err.Error(), http.StatusInternalServerError)
+			close(tokenChan)
+			return
 		}
+		_, _ = fmt.Fprintf(w, "Authentication successful. Go back to your terminal.")
 		tokenChan <- token
 	})
 
@@ -53,9 +58,11 @@ func Authenticate() *oauth2.Token {
 	}()
 
 	token := <-tokenChan
-	fmt.Printf("Access Token: %+v\n", token)
-	_ = server.Close()
+	if token == nil {
+		log.Fatalln("Authentication failed")
+	}
 	log.Println("Authentication completed")
+	_ = server.Close()
 	return token
 }
 
