@@ -1,1 +1,1 @@
-# freeagent-cli
+# FreeAgent CLI

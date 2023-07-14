@@ -3,14 +3,13 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
+	"github.com/lazydevorg/freeagent-cli/internal/cache"
 	"golang.org/x/oauth2"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
 const (
@@ -75,34 +74,7 @@ func Authenticate() *oauth2.Token {
 }
 
 func storeToken(token *oauth2.Token) error {
-	jsonToken, err := json.Marshal(token)
-	if err != nil {
-		log.Fatalln("Error storing authentication data:", err)
-	}
-	base64Token := base64.StdEncoding.EncodeToString(jsonToken)
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	cachePath := filepath.Join(home, ".cache", "freeagent-cli")
-	err = os.MkdirAll(cachePath, 0700)
-	if err != nil {
-		return err
-	}
-
-	authDataPath := filepath.Join(cachePath, "auth")
-	f, err := os.Create(authDataPath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	_, err = f.WriteString(base64Token)
-	if err != nil {
-		return err
-	}
-	return nil
+	return cache.SaveJson("auth", token)
 }
 
 func randomState() string {
