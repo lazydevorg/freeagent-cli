@@ -1,7 +1,6 @@
-package auth
+package client
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -72,15 +71,6 @@ func Authenticate() *oauth2.Token {
 	log.Println("Authentication completed")
 	_ = server.Close()
 	return token
-}
-
-func NewClient(ctx context.Context) *http.Client {
-	token, err := loadToken()
-	if err != nil {
-		log.Fatalln("Error loading authentication data")
-	}
-	tokenSource := oAuthConfig().TokenSource(ctx, token)
-	return oauth2.NewClient(ctx, tokenSource)
 }
 
 func storeToken(token *oauth2.Token) error {
