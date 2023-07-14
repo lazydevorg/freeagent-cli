@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -73,8 +74,26 @@ func Authenticate() *oauth2.Token {
 	return token
 }
 
+func NewClient(ctx context.Context) *http.Client {
+	token, err := loadToken()
+	if err != nil {
+		log.Fatalln("Error loading authentication data")
+	}
+	tokenSource := oAuthConfig().TokenSource(ctx, token)
+	return oauth2.NewClient(ctx, tokenSource)
+}
+
 func storeToken(token *oauth2.Token) error {
 	return cache.SaveJson("auth", token)
+}
+
+func loadToken() (*oauth2.Token, error) {
+	token := &oauth2.Token{}
+	err := cache.LoadJson("auth", token)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
 func randomState() string {
