@@ -2,22 +2,19 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/lazydevorg/freeagent-cli/internal/client"
-	"io"
 )
 
 func main() {
 	//client.Authenticate()
 	ctx := context.Background()
-	client := client.NewClient(ctx)
-	defer client.Close()
-	response, err := client.Http.Get("https://api.sandbox.freeagent.com/v2/company")
+	c := client.NewClient(ctx)
+	usersClient := c.NewUsersClient()
+	defer c.Close()
+	profile, err := usersClient.PersonalProfile()
 	if err != nil {
-		return
+		panic(err)
 	}
-	defer response.Body.Close()
-	_, err = io.ReadAll(response.Body)
-	if err != nil {
-		return
-	}
+	fmt.Printf("%+v", profile)
 }

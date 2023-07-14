@@ -2,7 +2,9 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"golang.org/x/oauth2"
+	"io"
 	"log"
 	"net/http"
 )
@@ -30,4 +32,40 @@ func NewClient(ctx context.Context) *Client {
 		Http:        oauth2.NewClient(ctx, tokenSource),
 		tokenSource: tokenSource,
 	}
+}
+
+func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
+	response, err := c.Http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	entityResponse := map[string]T{}
+	err = json.Unmarshal(body, &entityResponse)
+	if err != nil {
+		return nil, err
+	}
+	var entity = entityResponse[entityName]
+	return &entity, nil
+}
+
+func GetArray[T any](c *Client, url string, groupName string) ([]T, error) {
+	response, err := c.Http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	entityResponse := map[string][]T{}
+	err = json.Unmarshal(body, &entityResponse)
+	if err != nil {
+		return nil, err
+	}
+	var entity = entityResponse[groupName]
+	return entity, nil
 }
