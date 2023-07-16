@@ -11,4 +11,11 @@ jobs:
       - name: Download dependencies
         run: go mod download
       - name: Run tests
-        run: go test ./...
+        run: go run gotest.tools/gotestsum@latest --junitfile reports/tests.xml
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Tests report
+          path: reports/*.xml
+          reporter: jest-junit
