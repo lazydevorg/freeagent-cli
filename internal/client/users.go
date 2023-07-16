@@ -27,11 +27,11 @@ type User struct {
 }
 
 func (u *UsersClient) PersonalProfile() (user *User, err error) {
-	user, err = GetEntity[User](u.client, "https://api.sandbox.freeagent.com/v2/users/me", "user")
+	user, err = GetEntity[User](u.client, "users/me", "user")
 	return
 }
 
 func (u *UsersClient) GetAllUsers() (users []User, err error) {
-	users, err = GetArray[User](u.client, "https://api.sandbox.freeagent.com/v2/users", "users")
+	users, err = GetArray[User](u.client, "users", "users")
 	return
 }

@@ -7,7 +7,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	u "net/url"
 )
+
+var baseUrl = "https://api.sandbox.freeagent.com/v2/"
 
 type Client struct {
 	Http        *http.Client
@@ -35,6 +38,10 @@ func NewClient(ctx context.Context) *Client {
 }
 
 func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
+	url, err := u.JoinPath(baseUrl, url)
+	if err != nil {
+		return nil, err
+	}
 	response, err := c.Http.Get(url)
 	if err != nil {
 		return nil, err
@@ -53,6 +60,10 @@ func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
 }
 
 func GetArray[T any](c *Client, url string, groupName string) ([]T, error) {
+	url, err := u.JoinPath(baseUrl, url)
+	if err != nil {
+		return nil, err
+	}
 	response, err := c.Http.Get(url)
 	if err != nil {
 		return nil, err
