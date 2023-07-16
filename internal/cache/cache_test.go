@@ -7,11 +7,11 @@ func TestCache(t *testing.T) {
 
 	err := Save("test", []byte("testdata"))
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	data, err := Load("test")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if string(data) != "testdata" {
 		t.Errorf("Loaded data do not match: %s", string(data))
@@ -24,11 +24,11 @@ func BenchmarkCache(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		err := Save("test", []byte("testdata"))
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 		_, err = Load("test")
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 	}
 }
@@ -42,12 +42,12 @@ func TestCacheJson(t *testing.T) {
 	data := TestData{Name: "test"}
 	err := SaveJson("test", data)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	var loadedData TestData
 	err = LoadJson("test", &loadedData)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if loadedData != data {
 		t.Error("Loaded data do not match")
@@ -65,12 +65,12 @@ func BenchmarkJsonCache(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		err := SaveJson("test", data)
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 		var loadedData TestData
 		err = LoadJson("test", &loadedData)
 		if err != nil {
-			b.Error(err)
+			b.Fatal(err)
 		}
 	}
 }
