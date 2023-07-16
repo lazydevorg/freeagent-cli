@@ -8,14 +8,27 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: '1.20.x'
+
       - name: Download dependencies
         run: go mod download
+
+      - name: Install go-test-report
+        run: go install github.com/vakenbolt/go-test-report@latest
+
       - name: Run tests
-        run: go run gotest.tools/gotestsum@latest --junitfile reports/tests.xml
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+        run: go test -json -coverprofile cover.out ./... | go-test-report -g 1 -o "tests.html" -t "Test report"
+
+      - name: Run coverage
+        run: go tool cover -html cover.out -o cover.html
+
+      - name: Test report
+        uses: actions/upload-artifact@v3
         with:
-          name: Tests report
-          path: reports/*.xml
-          reporter: jest-junit
+          name: test report
+          path: tests.html
+
+      - name: Coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: Coverage report
+          path: cover.html
