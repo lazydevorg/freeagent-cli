@@ -47,23 +47,28 @@ func (c CallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.tokenChan <- token
 }
 
-func Authenticate() *oauth2.Token {
-	oAuthConfig := oAuthConfig()
-	state := randomState()
+type CallbackServer struct {
+	oAuthConfig *oauth2.Config
+	state       string
+}
 
-	callbackHandler := NewCallbackHandler(oAuthConfig, state)
-	tokenChan := callbackHandler.tokenChan
+func NewLocalServer(oAuthConfig *oauth2.Config) *CallbackServer {
+	return &CallbackServer{oAuthConfig: oAuthConfig, state: randomState()}
+}
+
+func (s *CallbackServer) AuthCodeURL() string {
+	return s.oAuthConfig.AuthCodeURL(s.state)
+}
+
+func (s *CallbackServer) RetrieveToken() *oauth2.Token {
+	callbackHandler := NewCallbackHandler(s.oAuthConfig, s.state)
 	callbackServer := http.NewServeMux()
 	callbackServer.Handle("/callback", callbackHandler)
-
-	url := oAuthConfig.AuthCodeURL(state)
-	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
 
 	server := http.Server{
 		Addr:    "localhost:8080",
 		Handler: callbackServer,
 	}
-
 	go func() {
 		err := server.ListenAndServe()
 		if err != http.ErrServerClosed {
@@ -71,7 +76,25 @@ func Authenticate() *oauth2.Token {
 		}
 	}()
 
-	token := <-tokenChan
+	token := <-callbackHandler.tokenChan
+	if token == nil {
+		log.Fatalln("Authentication failed")
+		return nil
+	}
+
+	log.Println("Authentication completed")
+	_ = server.Close()
+	return token
+}
+
+func Authenticate() *oauth2.Token {
+	oAuthConfig := oAuthConfig()
+	server := NewLocalServer(oAuthConfig)
+
+	url := server.AuthCodeURL()
+	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
+
+	token := server.RetrieveToken()
 	if token == nil {
 		log.Fatalln("Authentication failed")
 	}
@@ -81,8 +104,6 @@ func Authenticate() *oauth2.Token {
 		log.Fatalln("Error storing authentication data")
 	}
 
-	log.Println("Authentication completed")
-	_ = server.Close()
 	return token
 }
 
