@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"github.com/lazydevorg/freeagent-cli/internal/client/auth"
 	"golang.org/x/oauth2"
 	"io"
 	"log"
@@ -22,15 +23,15 @@ func (c *Client) Close() error {
 	if err != nil {
 		return err
 	}
-	return storeToken(token)
+	return auth.StoreToken(token)
 }
 
 func NewClient(ctx context.Context) *Client {
-	token, err := loadToken()
+	token, err := auth.LoadToken()
 	if err != nil {
 		log.Fatalln("Error loading authentication data")
 	}
-	tokenSource := oAuthConfig().TokenSource(ctx, token)
+	tokenSource := auth.OAuthConfig().TokenSource(ctx, token)
 	return &Client{
 		Http:        oauth2.NewClient(ctx, tokenSource),
 		tokenSource: tokenSource,
