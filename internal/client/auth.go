@@ -18,39 +18,57 @@ const (
 	redirectURL = "http://localhost:8080/callback"
 )
 
-func Authenticate() *oauth2.Token {
-	oAuthConfig := oAuthConfig()
-	state := randomState()
+type CallbackHandler struct {
+	oAuthConfig *oauth2.Config
+	state       string
+	tokenChan   chan *oauth2.Token
+}
 
+func NewCallbackHandler(oAuthConfig *oauth2.Config, state string) CallbackHandler {
 	tokenChan := make(chan *oauth2.Token)
-	callbackHandler := http.NewServeMux()
-	callbackHandler.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		state2 := r.FormValue("state")
-		if state2 != state {
-			http.Error(w, "Authentication failed: 'state' value is incorrect", http.StatusInternalServerError)
-			close(tokenChan)
-			return
-		}
+	return CallbackHandler{oAuthConfig: oAuthConfig, state: state, tokenChan: tokenChan}
+}
 
-		code := r.FormValue("code")
-		token, err := oAuthConfig.Exchange(r.Context(), code)
-		if err != nil {
-			http.Error(w, "Authentication failed: "+err.Error(), http.StatusInternalServerError)
-			close(tokenChan)
-			return
-		}
-		_, _ = fmt.Fprintf(w, "Authentication successful. Go back to your terminal.")
-		tokenChan <- token
-	})
+func (c CallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer close(c.tokenChan)
+	callbackState := r.FormValue("state")
+	if callbackState != c.state {
+		http.Error(w, "Authentication failed: 'state' value is incorrect", http.StatusInternalServerError)
+		return
+	}
 
-	url := oAuthConfig.AuthCodeURL(state)
-	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
+	code := r.FormValue("code")
+	token, err := c.oAuthConfig.Exchange(r.Context(), code)
+	if err != nil {
+		http.Error(w, "Authentication failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, _ = fmt.Fprintf(w, "Authentication successful. Go back to your terminal.")
+	c.tokenChan <- token
+}
+
+type CallbackServer struct {
+	oAuthConfig *oauth2.Config
+	state       string
+}
+
+func NewLocalServer(oAuthConfig *oauth2.Config) *CallbackServer {
+	return &CallbackServer{oAuthConfig: oAuthConfig, state: randomState()}
+}
+
+func (s *CallbackServer) AuthCodeURL() string {
+	return s.oAuthConfig.AuthCodeURL(s.state)
+}
+
+func (s *CallbackServer) RetrieveToken() *oauth2.Token {
+	callbackHandler := NewCallbackHandler(s.oAuthConfig, s.state)
+	callbackServer := http.NewServeMux()
+	callbackServer.Handle("/callback", callbackHandler)
 
 	server := http.Server{
 		Addr:    "localhost:8080",
-		Handler: callbackHandler,
+		Handler: callbackServer,
 	}
-
 	go func() {
 		err := server.ListenAndServe()
 		if err != http.ErrServerClosed {
@@ -58,7 +76,25 @@ func Authenticate() *oauth2.Token {
 		}
 	}()
 
-	token := <-tokenChan
+	token := <-callbackHandler.tokenChan
+	if token == nil {
+		log.Fatalln("Authentication failed")
+		return nil
+	}
+
+	log.Println("Authentication completed")
+	_ = server.Close()
+	return token
+}
+
+func Authenticate() *oauth2.Token {
+	oAuthConfig := oAuthConfig()
+	server := NewLocalServer(oAuthConfig)
+
+	url := server.AuthCodeURL()
+	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
+
+	token := server.RetrieveToken()
 	if token == nil {
 		log.Fatalln("Authentication failed")
 	}
@@ -68,8 +104,6 @@ func Authenticate() *oauth2.Token {
 		log.Fatalln("Error storing authentication data")
 	}
 
-	log.Println("Authentication completed")
-	_ = server.Close()
 	return token
 }
 
