@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
@@ -19,7 +20,7 @@ func (s *CallbackServer) AuthCodeURL() string {
 	return s.oAuthConfig.AuthCodeURL(s.state)
 }
 
-func (s *CallbackServer) WaitForToken() *oauth2.Token {
+func (s *CallbackServer) WaitForAuthCode() (string, error) {
 	callbackHandler := NewCallbackHandler(s.oAuthConfig, s.state)
 	callbackServer := http.NewServeMux()
 	callbackServer.Handle("/callback", &callbackHandler)
@@ -35,13 +36,11 @@ func (s *CallbackServer) WaitForToken() *oauth2.Token {
 		}
 	}()
 
-	token := <-callbackHandler.tokenChan
-	if token == nil {
-		log.Fatalln("Authentication failed")
-		return nil
+	code := <-callbackHandler.codeChan
+	if code == "" {
+		return "", errors.New("Authentication failed")
 	}
 
-	log.Println("Authentication completed")
 	_ = server.Close()
-	return token
+	return code, nil
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -38,15 +39,22 @@ func Authenticate() *oauth2.Token {
 	url := server.AuthCodeURL()
 	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
 
-	token := server.WaitForToken()
-	if token == nil {
-		log.Fatalln("Authentication failed")
+	code, err := server.WaitForAuthCode()
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	err := StoreToken(token)
+	token, err := oAuthConfig.Exchange(context.Background(), code)
+	if err != nil {
+		log.Fatalln("Authentication failed:", err)
+		return nil
+	}
+
+	err = StoreToken(token)
 	if err != nil {
 		log.Fatalln("Error storing authentication data")
 	}
+	fmt.Println("Authentication successful")
 
 	return token
 }
