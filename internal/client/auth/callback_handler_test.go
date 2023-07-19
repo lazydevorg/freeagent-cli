@@ -4,14 +4,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 	"time"
 )
 
 func TestCallbackHandlerSuccess(t *testing.T) {
-	body := strings.NewReader(url.Values{"code": {"123"}, "state": {"123"}}.Encode())
-	req, err := http.NewRequest("POST", "/callback", body)
+	values := url.Values{"code": {"123"}, "state": {"123"}}.Encode()
+	req, err := http.NewRequest("GET", "/callback?"+values, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,8 +34,8 @@ func TestCallbackHandlerSuccess(t *testing.T) {
 }
 
 func TestCallbackHandlerWrongState(t *testing.T) {
-	body := strings.NewReader(url.Values{"code": {"123"}, "state": {"321"}}.Encode())
-	req, err := http.NewRequest("POST", "/callback", body)
+	values := url.Values{"code": {"123"}, "state": {"321"}}.Encode()
+	req, err := http.NewRequest("GET", "/callback?"+values, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
