@@ -29,6 +29,8 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 		Addr:    "localhost:8080",
 		Handler: callbackServer,
 	}
+	defer server.Close()
+
 	go func() {
 		err := server.ListenAndServe()
 		if err != http.ErrServerClosed {
@@ -41,6 +43,5 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 		return "", errors.New("Authentication failed")
 	}
 
-	_ = server.Close()
 	return code, nil
 }
