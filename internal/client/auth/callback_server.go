@@ -29,7 +29,7 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 		Addr:    "localhost:8080",
 		Handler: callbackServer,
 	}
-	defer server.Close()
+	defer closeServer(&server)
 
 	go func() {
 		err := server.ListenAndServe()
@@ -44,4 +44,11 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 	}
 
 	return code, nil
+}
+
+func closeServer(server *http.Server) {
+	err := server.Close()
+	if err != nil {
+		log.Fatalln("Error closing callback server:", err)
+	}
 }
