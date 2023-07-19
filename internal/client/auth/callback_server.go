@@ -21,7 +21,7 @@ func (s *CallbackServer) AuthCodeURL() string {
 }
 
 func (s *CallbackServer) WaitForAuthCode() (string, error) {
-	callbackHandler := NewCallbackHandler(s.oAuthConfig, s.state)
+	callbackHandler := NewCallbackHandler(s.state)
 	callbackServer := http.NewServeMux()
 	callbackServer.Handle("/callback", &callbackHandler)
 
