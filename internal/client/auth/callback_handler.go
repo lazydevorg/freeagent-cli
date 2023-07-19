@@ -23,6 +23,12 @@ func (c *CallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Authentication failed: 'state' value is incorrect", http.StatusInternalServerError)
 		return
 	}
+
+	code := r.FormValue("code")
+	if code == "" {
+		http.Error(w, "Authentication failed: 'code' not received", http.StatusInternalServerError)
+		return
+	}
 	_, _ = fmt.Fprintf(w, "Go back to your terminal.")
-	c.codeChan <- r.FormValue("code")
+	c.codeChan <- code
 }
