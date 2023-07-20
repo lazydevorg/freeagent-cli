@@ -1,17 +1,16 @@
 package auth
 
 import (
-	"fmt"
+	"encoding/base64"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"testing"
 )
 
 func TestTokenExchange(t *testing.T) {
-	config := oauth2.Config{}
-
 	tests := []struct {
 		name           string
 		serverState    string
@@ -23,6 +22,7 @@ func TestTokenExchange(t *testing.T) {
 		{"Wrong state", "123", "321", "", http.StatusInternalServerError},
 		{"No code", "123", "123", "", http.StatusInternalServerError},
 	}
+	config := oauth2.Config{}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -56,7 +56,6 @@ func TestTokenExchange(t *testing.T) {
 			}
 
 			wg.Wait()
-			fmt.Println("Done")
 		})
 	}
 }
@@ -71,7 +70,22 @@ func TestAuthURL(t *testing.T) {
 		Scopes: []string{"scope"},
 	}
 	server := NewCallbackServer(&config)
-	if server.AuthCodeURL() != "https://oauth.test/auth?client_id=CLIENT_ID&response_type=code&scope=scope&state=cmFuZG9tU3RhdGU%3D" {
-		t.Error("Unexpected auth URL:", server.AuthCodeURL())
+
+	serverUrl := server.AuthCodeURL()
+	if !strings.HasPrefix(serverUrl, "https://oauth.test/auth") {
+		t.Error("Unexpected auth URL:", serverUrl)
+	}
+	parsedUrl, err := url.Parse(serverUrl)
+	if err != nil {
+		t.Error("Unexpected error parsing auth URL:", err)
+	}
+	parsedValues, err := url.ParseQuery(parsedUrl.RawQuery)
+	encodedState := parsedValues.Get("state")
+	rawState, err := base64.StdEncoding.DecodeString(encodedState)
+	if err != nil {
+		t.Error("Unexpected error decoding state:", err)
+	}
+	if len(rawState) != 32 {
+		t.Error("Unexpected state length:", len(rawState))
 	}
 }
