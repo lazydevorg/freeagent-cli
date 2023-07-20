@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	authURL     = "https://api.sandbox.freeagent.com/v2/approve_app"
-	tokenURL    = "https://api.sandbox.freeagent.com/v2/token_endpoint"
-	redirectURL = "http://localhost:8080/callback"
+	defaultAuthUrl     = "https://api.sandbox.freeagent.com/v2/approve_app"
+	defaultTokenUrl    = "https://api.sandbox.freeagent.com/v2/token_endpoint"
+	defaultRedirectUrl = "http://localhost:8080/callback"
 )
 
 func OAuthConfig() *oauth2.Config {
@@ -24,11 +24,11 @@ func OAuthConfig() *oauth2.Config {
 		ClientSecret: clientSecret(),
 		Scopes:       []string{"all"},
 		Endpoint: oauth2.Endpoint{
-			AuthURL:   authURL,
-			TokenURL:  tokenURL,
+			AuthURL:   authURL(),
+			TokenURL:  tokenURL(),
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
-		RedirectURL: redirectURL,
+		RedirectURL: defaultRedirectUrl,
 	}
 }
 
@@ -95,4 +95,20 @@ func clientID() string {
 		log.Fatal("CLIENT_ID environment variable must be set")
 	}
 	return clientID
+}
+
+func authURL() string {
+	value := os.Getenv("AUTH_URL")
+	if value == "" {
+		return defaultAuthUrl
+	}
+	return value
+}
+
+func tokenURL() string {
+	value := os.Getenv("TOKEN_URL")
+	if value == "" {
+		return defaultTokenUrl
+	}
+	return value
 }
