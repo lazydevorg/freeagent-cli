@@ -3,7 +3,7 @@ package cache
 import "testing"
 
 func TestCache(t *testing.T) {
-	t.Setenv("CACHE_PATH", t.TempDir())
+	t.Setenv("HOME", t.TempDir())
 
 	err := Save("test", []byte("testdata"))
 	if err != nil {
@@ -19,7 +19,7 @@ func TestCache(t *testing.T) {
 }
 
 func BenchmarkCache(b *testing.B) {
-	b.Setenv("CACHE_PATH", b.TempDir())
+	b.Setenv("HOME", b.TempDir())
 
 	for i := 0; i < b.N; i++ {
 		err := Save("test", []byte("testdata"))
@@ -34,7 +34,7 @@ func BenchmarkCache(b *testing.B) {
 }
 
 func TestCacheJson(t *testing.T) {
-	t.Setenv("CACHE_PATH", t.TempDir())
+	t.Setenv("HOME", t.TempDir())
 
 	type TestData struct {
 		Name string
@@ -55,7 +55,7 @@ func TestCacheJson(t *testing.T) {
 }
 
 func BenchmarkJsonCache(b *testing.B) {
-	b.Setenv("CACHE_PATH", b.TempDir())
+	b.Setenv("HOME", b.TempDir())
 
 	type TestData struct {
 		Name string

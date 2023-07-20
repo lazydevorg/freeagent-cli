@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	authURL     = "https://api.sandbox.freeagent.com/v2/approve_app"
-	tokenURL    = "https://api.sandbox.freeagent.com/v2/token_endpoint"
-	redirectURL = "http://localhost:8080/callback"
+	defaultAuthUrl     = "https://api.sandbox.freeagent.com/v2/approve_app"
+	defaultTokenUrl    = "https://api.sandbox.freeagent.com/v2/token_endpoint"
+	defaultRedirectUrl = "http://localhost:8080/callback"
 )
 
 func OAuthConfig() *oauth2.Config {
@@ -24,27 +24,38 @@ func OAuthConfig() *oauth2.Config {
 		ClientSecret: clientSecret(),
 		Scopes:       []string{"all"},
 		Endpoint: oauth2.Endpoint{
-			AuthURL:   authURL,
-			TokenURL:  tokenURL,
+			AuthURL:   authURL(),
+			TokenURL:  tokenURL(),
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
-		RedirectURL: redirectURL,
+		RedirectURL: defaultRedirectUrl,
 	}
 }
 
-func Authenticate() *oauth2.Token {
-	oAuthConfig := OAuthConfig()
-	server := NewCallbackServer(oAuthConfig)
+type OAuthServer struct {
+	config *oauth2.Config
+	server *CallbackServer
+}
 
-	url := server.AuthCodeURL()
+func NewOAuthServer() *OAuthServer {
+	config := OAuthConfig()
+	return &OAuthServer{config: config, server: NewCallbackServer(config)}
+}
+
+func (s *OAuthServer) AuthCodeURL() string {
+	return s.server.AuthCodeURL()
+}
+
+func (s *OAuthServer) Authenticate() *oauth2.Token {
+	url := s.server.AuthCodeURL()
 	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
 
-	code, err := server.WaitForAuthCode()
+	code, err := s.server.WaitForAuthCode()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	token, err := oAuthConfig.Exchange(context.Background(), code)
+	token, err := s.config.Exchange(context.Background(), code)
 	if err != nil {
 		log.Fatalln("Authentication failed:", err)
 		return nil
@@ -73,11 +84,12 @@ func StoreToken(token *oauth2.Token) error {
 }
 
 func randomState() string {
-	_, err := io.ReadFull(rand.Reader, make([]byte, 16))
+	data := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, data)
 	if err != nil {
 		panic(err)
 	}
-	return base64.StdEncoding.EncodeToString([]byte("randomState"))
+	return base64.StdEncoding.EncodeToString(data)
 }
 
 func clientSecret() string {
@@ -94,4 +106,20 @@ func clientID() string {
 		log.Fatal("CLIENT_ID environment variable must be set")
 	}
 	return clientID
+}
+
+func authURL() string {
+	value := os.Getenv("AUTH_URL")
+	if value == "" {
+		return defaultAuthUrl
+	}
+	return value
+}
+
+func tokenURL() string {
+	value := os.Getenv("TOKEN_URL")
+	if value == "" {
+		return defaultTokenUrl
+	}
+	return value
 }

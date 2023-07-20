@@ -45,15 +45,11 @@ func Load(name string) ([]byte, error) {
 }
 
 func getCachePath() (string, error) {
-	cachePath := os.Getenv("CACHE_PATH")
-	if cachePath != "" {
-		return cachePath, nil
-	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	cachePath = filepath.Join(home, ".cache", "freeagent-cli")
+	cachePath := filepath.Join(home, ".cache", "freeagent-cli")
 	err = os.MkdirAll(cachePath, 0700)
 	if err != nil {
 		return "", err

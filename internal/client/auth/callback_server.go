@@ -21,7 +21,7 @@ func (s *CallbackServer) AuthCodeURL() string {
 }
 
 func (s *CallbackServer) WaitForAuthCode() (string, error) {
-	callbackHandler := NewCallbackHandler(s.oAuthConfig, s.state)
+	callbackHandler := NewCallbackHandler(s.state)
 	callbackServer := http.NewServeMux()
 	callbackServer.Handle("/callback", &callbackHandler)
 
@@ -29,6 +29,8 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 		Addr:    "localhost:8080",
 		Handler: callbackServer,
 	}
+	defer closeServer(&server)
+
 	go func() {
 		err := server.ListenAndServe()
 		if err != http.ErrServerClosed {
@@ -41,6 +43,12 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 		return "", errors.New("Authentication failed")
 	}
 
-	_ = server.Close()
 	return code, nil
+}
+
+func closeServer(server *http.Server) {
+	err := server.Close()
+	if err != nil {
+		log.Fatalln("Error closing callback server:", err)
+	}
 }

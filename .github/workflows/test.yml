@@ -1,4 +1,9 @@
-on: [pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 name: Test
 jobs:
   test:
@@ -13,4 +18,7 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        run: go test  ./...
+        run: go test -v ./...
+
+      - name: Go Vet
+        run: go vet ./...
