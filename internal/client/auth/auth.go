@@ -73,11 +73,12 @@ func StoreToken(token *oauth2.Token) error {
 }
 
 func randomState() string {
-	_, err := io.ReadFull(rand.Reader, make([]byte, 16))
+	data := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, data)
 	if err != nil {
 		panic(err)
 	}
-	return base64.StdEncoding.EncodeToString([]byte("randomState"))
+	return base64.StdEncoding.EncodeToString(data)
 }
 
 func clientSecret() string {
