@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	auth.Authenticate()
+	auth.NewOAuthServer().Authenticate()
 	//ctx := context.Background()
 	//c := client.NewClient(ctx)
 	//usersClient := c.NewUsersClient()

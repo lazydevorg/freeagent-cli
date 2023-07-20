@@ -32,19 +32,30 @@ func OAuthConfig() *oauth2.Config {
 	}
 }
 
-func Authenticate() *oauth2.Token {
-	oAuthConfig := OAuthConfig()
-	server := NewCallbackServer(oAuthConfig)
+type OAuthServer struct {
+	config *oauth2.Config
+	server *CallbackServer
+}
 
-	url := server.AuthCodeURL()
+func NewOAuthServer() *OAuthServer {
+	config := OAuthConfig()
+	return &OAuthServer{config: config, server: NewCallbackServer(config)}
+}
+
+func (s *OAuthServer) AuthCodeURL() string {
+	return s.server.AuthCodeURL()
+}
+
+func (s *OAuthServer) Authenticate() *oauth2.Token {
+	url := s.server.AuthCodeURL()
 	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
 
-	code, err := server.WaitForAuthCode()
+	code, err := s.server.WaitForAuthCode()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	token, err := oAuthConfig.Exchange(context.Background(), code)
+	token, err := s.config.Exchange(context.Background(), code)
 	if err != nil {
 		log.Fatalln("Authentication failed:", err)
 		return nil
