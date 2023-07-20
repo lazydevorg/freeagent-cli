@@ -14,3 +14,6 @@ jobs:
 
       - name: Run tests
         run: go test -v ./...
+
+      - name: Go Vet
+        run: go vet ./...
