@@ -40,7 +40,7 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 
 	code := <-callbackHandler.codeChan
 	if code == "" {
-		return "", errors.New("Authentication failed")
+		return "", errors.New("authentication failed")
 	}
 
 	return code, nil

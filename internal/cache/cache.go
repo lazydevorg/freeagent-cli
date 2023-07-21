@@ -44,6 +44,14 @@ func Load(name string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
+func Delete(name string) error {
+	path, err := getFilePath(name)
+	if err != nil {
+		return err
+	}
+	return os.Remove(path)
+}
+
 func getCachePath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
