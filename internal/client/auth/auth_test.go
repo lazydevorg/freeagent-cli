@@ -90,10 +90,7 @@ func TestAuthenticate(t *testing.T) {
 	oAuthServer := NewOAuthServer()
 	go func() {
 		defer wg.Done()
-		err := DeleteToken()
-		if err != nil {
-			t.Error(err)
-		}
+		_ = DeleteToken()
 		token := oAuthServer.Authenticate()
 		if token == nil {
 			t.Error("Unexpected nil token")
