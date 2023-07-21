@@ -6,10 +6,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/lazydevorg/freeagent-cli/internal/cache"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"io"
 	"log"
-	"os"
 )
 
 const (
@@ -92,34 +92,35 @@ func randomState() string {
 	return base64.StdEncoding.EncodeToString(data)
 }
 
+func clientID() string {
+	clientID := viper.GetString("auth.clientId")
+	if clientID == "" {
+		log.Fatal("CLIENT_ID environment variable must be set")
+	}
+	return viper.GetString("auth.clientId")
+}
+
 func clientSecret() string {
-	clientSecret := os.Getenv("CLIENT_SECRET")
+	clientSecret := viper.GetString("auth.clientSecret")
 	if clientSecret == "" {
 		log.Fatal("CLIENT_SECRET environment variable must be set")
 	}
 	return clientSecret
 }
 
-func clientID() string {
-	clientID := os.Getenv("CLIENT_ID")
-	if clientID == "" {
-		log.Fatal("CLIENT_ID environment variable must be set")
-	}
-	return clientID
-}
-
 func authURL() string {
-	value := os.Getenv("AUTH_URL")
-	if value == "" {
-		return defaultAuthUrl
-	}
-	return value
+	return viper.GetString("auth.url")
 }
 
 func tokenURL() string {
-	value := os.Getenv("TOKEN_URL")
-	if value == "" {
-		return defaultTokenUrl
-	}
-	return value
+	return viper.GetString("auth.tokenUrl")
+}
+
+func init() {
+	_ = viper.BindEnv("auth.clientId", "CLIENT_ID")
+	_ = viper.BindEnv("auth.clientSecret", "CLIENT_SECRET")
+	_ = viper.BindEnv("auth.url", "AUTH_URL")
+	viper.SetDefault("auth.url", defaultAuthUrl)
+	_ = viper.BindEnv("auth.tokenUrl", "TOKEN_URL")
+	viper.SetDefault("auth.tokenUrl", defaultTokenUrl)
 }
