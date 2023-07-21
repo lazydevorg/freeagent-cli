@@ -16,10 +16,7 @@ var Cmd = &cobra.Command{
 		auth.Authenticate(false)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		c := client.NewClient(cmd.Context())
-		usersClient := c.NewUsersClient()
-		defer c.Close()
-		profile, err := usersClient.PersonalProfile()
+		profile, err := client.PersonalProfile()
 		if err != nil {
 			panic(err)
 		}

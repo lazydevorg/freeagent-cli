@@ -4,14 +4,6 @@ import (
 	"time"
 )
 
-type UsersClient struct {
-	client *Client
-}
-
-func (c *Client) NewUsersClient() *UsersClient {
-	return &UsersClient{client: c}
-}
-
 type User struct {
 	Url                string    `json:"url"`
 	FirstName          string    `json:"first_name"`
@@ -26,12 +18,12 @@ type User struct {
 	CreatedAt          time.Time `json:"created_at"`
 }
 
-func (u *UsersClient) PersonalProfile() (user *User, err error) {
-	user, err = GetEntity[User](u.client, "users/me", "user")
+func PersonalProfile() (user *User, err error) {
+	user, err = GetEntity[User]("users/me", "user")
 	return
 }
 
-func (u *UsersClient) GetAllUsers() (users []User, err error) {
-	users, err = GetArray[User](u.client, "users", "users")
+func GetAllUsers() (users []User, err error) {
+	users, err = GetArray[User]("users", "users")
 	return
 }

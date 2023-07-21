@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/lazydevorg/freeagent-cli/internal/client/auth"
 	"golang.org/x/oauth2"
 	"io"
@@ -18,15 +19,29 @@ type Client struct {
 	tokenSource oauth2.TokenSource
 }
 
-func (c *Client) Close() error {
-	token, err := c.tokenSource.Token()
-	if err != nil {
-		return err
+var client *Client
+
+func ClientSingleton() *Client {
+	if client == nil {
+		client = newClient(context.Background())
 	}
-	return auth.StoreToken(token)
+	return client
 }
 
-func NewClient(ctx context.Context) *Client {
+func SaveToken() {
+	if client != nil {
+		token, err := client.tokenSource.Token()
+		if err != nil {
+			fmt.Println("Error storing token")
+		}
+		err = auth.StoreToken(token)
+		if err != nil {
+			fmt.Println("Error storing token")
+		}
+	}
+}
+
+func newClient(ctx context.Context) *Client {
 	token, err := auth.LoadToken()
 	if err != nil {
 		log.Fatalln("Error loading authentication data")
@@ -38,7 +53,8 @@ func NewClient(ctx context.Context) *Client {
 	}
 }
 
-func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
+func getRequest(url string) ([]byte, error) {
+	c := ClientSingleton()
 	url, err := u.JoinPath(baseUrl, url)
 	if err != nil {
 		return nil, err
@@ -47,7 +63,11 @@ func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := io.ReadAll(response.Body)
+	return io.ReadAll(response.Body)
+}
+
+func GetEntity[T any](url string, entityName string) (*T, error) {
+	body, err := getRequest(url)
 	if err != nil {
 		return nil, err
 	}
@@ -60,16 +80,8 @@ func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
 	return &entity, nil
 }
 
-func GetArray[T any](c *Client, url string, groupName string) ([]T, error) {
-	url, err := u.JoinPath(baseUrl, url)
-	if err != nil {
-		return nil, err
-	}
-	response, err := c.Http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	body, err := io.ReadAll(response.Body)
+func GetArray[T any](url string, groupName string) ([]T, error) {
+	body, err := getRequest(url)
 	if err != nil {
 		return nil, err
 	}
