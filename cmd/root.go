@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/lazydevorg/freeagent-cli/cmd/auth"
+	"github.com/lazydevorg/freeagent-cli/cmd/whoami"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(authCmd)
-	rootCmd.AddCommand(whoAmICmd)
+	RootCmd.AddCommand(auth.Cmd)
+	RootCmd.AddCommand(whoami.Cmd)
 }
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "freeagent",
 	Short: "FreeAgent CLI",
 	Long:  `FreeAgent CLI Long description`,
@@ -18,14 +20,14 @@ var rootCmd = &cobra.Command{
 	Run:   run,
 }
 
-func run(cmd *cobra.Command, args []string) {
+func run(_ *cobra.Command, args []string) {
 	fmt.Printf("root called: %s\n", args)
 }
 
 func Execute() {
-	rootCmd.SetArgs([]string{"whoami"})
-	err := rootCmd.Execute()
+	RootCmd.SetArgs([]string{"help"})
+	err := RootCmd.Execute()
 	if err != nil {
-		_ = fmt.Errorf("Error executing root command: %s", err)
+		_ = fmt.Errorf("error executing root command: %s", err)
 	}
 }

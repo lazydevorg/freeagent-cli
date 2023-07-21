@@ -37,6 +37,13 @@ type OAuthServer struct {
 	server *CallbackServer
 }
 
+func Authenticate(force bool) {
+	if force {
+		_ = DeleteToken()
+	}
+	NewOAuthServer().Authenticate()
+}
+
 func NewOAuthServer() *OAuthServer {
 	config := OAuthConfig()
 	return &OAuthServer{config: config, server: NewCallbackServer(config)}
@@ -47,6 +54,11 @@ func (s *OAuthServer) AuthCodeURL() string {
 }
 
 func (s *OAuthServer) Authenticate() *oauth2.Token {
+	token, _ := LoadToken()
+	if token != nil {
+		return token
+	}
+
 	url := s.server.AuthCodeURL()
 	fmt.Printf("Click on the following URL and proceed with the login: %s\n", url)
 
@@ -55,7 +67,7 @@ func (s *OAuthServer) Authenticate() *oauth2.Token {
 		log.Fatalln(err)
 	}
 
-	token, err := s.config.Exchange(context.Background(), code)
+	token, err = s.config.Exchange(context.Background(), code)
 	if err != nil {
 		log.Fatalln("Authentication failed:", err)
 		return nil
@@ -81,6 +93,10 @@ func LoadToken() (*oauth2.Token, error) {
 
 func StoreToken(token *oauth2.Token) error {
 	return cache.SaveJson("auth", token)
+}
+
+func DeleteToken() error {
+	return cache.Delete("auth")
 }
 
 func randomState() string {
