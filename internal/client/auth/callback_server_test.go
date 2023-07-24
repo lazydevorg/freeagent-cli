@@ -79,8 +79,7 @@ func TestAuthURL(t *testing.T) {
 	if err != nil {
 		t.Error("Unexpected error parsing auth URL:", err)
 	}
-	parsedValues, err := url.ParseQuery(parsedUrl.RawQuery)
-	encodedState := parsedValues.Get("state")
+	encodedState := parsedUrl.Query().Get("state")
 	rawState, err := base64.StdEncoding.DecodeString(encodedState)
 	if err != nil {
 		t.Error("Unexpected error decoding state:", err)
