@@ -15,12 +15,5 @@ type Attachment struct {
 }
 
 func GetAttachment(id string) (*Attachment, error) {
-	attachment, err := GetEntity[Attachment]("attachments/"+id, "attachment")
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	return attachment, nil
+	return GetEntity[Attachment]("attachments/"+id, "attachment")
 }

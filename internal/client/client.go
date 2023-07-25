@@ -9,7 +9,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	u "net/url"
 )
 
 var baseUrl = "https://api.sandbox.freeagent.com/v2/"
@@ -55,10 +54,7 @@ func newClient(ctx context.Context) *Client {
 
 func getRequest(url string) ([]byte, error) {
 	c := ClientSingleton()
-	url, err := u.JoinPath(baseUrl, url)
-	if err != nil {
-		return nil, err
-	}
+	url = baseUrl + url
 	response, err := c.Http.Get(url)
 	if err != nil {
 		return nil, err

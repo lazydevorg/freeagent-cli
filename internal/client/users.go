@@ -18,12 +18,10 @@ type User struct {
 	CreatedAt          time.Time `json:"created_at"`
 }
 
-func PersonalProfile() (user *User, err error) {
-	user, err = GetEntity[User]("users/me", "user")
-	return
+func PersonalProfile() (*User, error) {
+	return GetEntity[User]("users/me", "user")
 }
 
-func GetAllUsers() (users []User, err error) {
-	users, err = GetArray[User]("users", "users")
-	return
+func GetAllUsers() ([]User, error) {
+	return GetArray[User]("users", "users")
 }

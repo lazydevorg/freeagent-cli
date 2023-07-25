@@ -1,6 +1,8 @@
 package client
 
-import "time"
+import (
+	"time"
+)
 
 type BankTransationExplanation struct {
 	Url             string     `json:"url"`
@@ -19,4 +21,12 @@ type BankTransationExplanation struct {
 	SalesTaxValue   string     `json:"sales_tax_value"`
 	IsDeletable     bool       `json:"is_deletable"`
 	Attachment      Attachment `json:"attachment"`
+}
+
+func GetBankTransactionExplanation(id string) (*BankTransationExplanation, error) {
+	return GetEntity[BankTransationExplanation]("bank_transaction_explanations/"+id, "bank_transaction_explanation")
+}
+
+func GetBankTransactionExplanations(bankAccountUrl string) ([]BankTransationExplanation, error) {
+	return GetArray[BankTransationExplanation]("bank_transaction_explanations?bank_account="+bankAccountUrl, "bank_transaction_explanations")
 }
