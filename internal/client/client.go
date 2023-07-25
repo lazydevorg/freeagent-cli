@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-var baseUrl = "https://api.sandbox.freeagent.com/v2/"
+var baseUrl = "https://api.freeagent.com/v2/"
 
 type Client struct {
 	Http        *http.Client
@@ -51,6 +51,8 @@ func newClient(ctx context.Context) *Client {
 		tokenSource: tokenSource,
 	}
 }
+
+const perPageDefault = 100
 
 func getRequest(url string) ([]byte, error) {
 	c := ClientSingleton()
