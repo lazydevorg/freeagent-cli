@@ -23,5 +23,5 @@ func PersonalProfile() (*User, error) {
 }
 
 func GetAllUsers() ([]User, error) {
-	return GetArray[User]("users", "users")
+	return GetCollection[User]("users", "users", nil)
 }

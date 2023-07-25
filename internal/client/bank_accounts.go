@@ -16,7 +16,7 @@ type BankAccount struct {
 }
 
 func GetBankAccounts() ([]BankAccount, error) {
-	bankAccounts, err := GetArray[BankAccount]("bank_accounts", "bank_accounts")
+	bankAccounts, err := GetCollection[BankAccount]("bank_accounts", "bank_accounts", nil)
 	if err != nil {
 		return nil, err
 	}

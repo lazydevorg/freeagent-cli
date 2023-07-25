@@ -20,7 +20,7 @@ type BankTransaction struct {
 }
 
 func GetBankTransactions(bankAccountId string) ([]BankTransaction, error) {
-	return GetArray[BankTransaction]("bank_transactions?bank_account="+bankAccountId, "bank_transactions")
+	return GetCollection[BankTransaction]("bank_transactions?bank_account="+bankAccountId, "bank_transactions", nil)
 }
 
 func GetBankTransaction(id string) (*BankTransaction, error) {

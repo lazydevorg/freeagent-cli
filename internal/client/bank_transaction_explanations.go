@@ -28,5 +28,5 @@ func GetBankTransactionExplanation(id string) (*BankTransationExplanation, error
 }
 
 func GetBankTransactionExplanations(bankAccountUrl string) ([]BankTransationExplanation, error) {
-	return GetArray[BankTransationExplanation]("bank_transaction_explanations?bank_account="+bankAccountUrl, "bank_transaction_explanations")
+	return GetCollection[BankTransationExplanation]("bank_transaction_explanations?bank_account="+bankAccountUrl, "bank_transaction_explanations", nil)
 }
