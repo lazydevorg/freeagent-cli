@@ -23,10 +23,10 @@ func TestOAuthConfig(t *testing.T) {
 	if config.ClientSecret != "client_secret" {
 		t.Error("Unexpected client secret:", config.ClientSecret)
 	}
-	if config.Endpoint.AuthURL != "https://api.sandbox.freeagent.com/v2/approve_app" {
+	if config.Endpoint.AuthURL != "https://api.freeagent.com/v2/approve_app" {
 		t.Error("Unexpected auth URL:", config.Endpoint.AuthURL)
 	}
-	if config.Endpoint.TokenURL != "https://api.sandbox.freeagent.com/v2/token_endpoint" {
+	if config.Endpoint.TokenURL != "https://api.freeagent.com/v2/token_endpoint" {
 		t.Error("Unexpected token URL:", config.Endpoint.TokenURL)
 	}
 	if config.RedirectURL != "http://localhost:8080/callback" {
