@@ -29,7 +29,7 @@ func run(_ *cobra.Command, args []string) {
 }
 
 func Execute() {
-	//RootCmd.SetArgs([]string{"whoami"})
+	RootCmd.SetArgs([]string{"whoami"})
 	err := RootCmd.Execute()
 	if err != nil {
 		_ = fmt.Errorf("error executing root command: %s", err)
