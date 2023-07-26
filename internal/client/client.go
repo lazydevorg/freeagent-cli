@@ -10,9 +10,10 @@ import (
 	"log"
 	"net/http"
 	u "net/url"
+	"strings"
 )
 
-var baseUrl = "https://api.sandbox.freeagent.com/v2/"
+var baseUrl = "https://api.freeagent.com/v2/"
 
 type Client struct {
 	Http        *http.Client
@@ -21,7 +22,7 @@ type Client struct {
 
 var client *Client
 
-func ClientSingleton() *Client {
+func Singleton() *Client {
 	if client == nil {
 		client = newClient(context.Background())
 	}
@@ -53,21 +54,45 @@ func newClient(ctx context.Context) *Client {
 	}
 }
 
-func getRequest(url string) ([]byte, error) {
-	c := ClientSingleton()
-	url, err := u.JoinPath(baseUrl, url)
+func getRequest(apiUrl string, params map[string]string) ([]byte, error) {
+	url, err := getUrl(apiUrl, params)
 	if err != nil {
 		return nil, err
 	}
-	response, err := c.Http.Get(url)
+	request, err := http.NewRequest("GET", *url, nil)
+	if err != nil {
+		return nil, err
+	}
+	c := Singleton()
+	response, err := c.Http.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	return io.ReadAll(response.Body)
 }
 
+const perPageDefault = 5
+
+func getUrl(url string, params map[string]string) (*string, error) {
+	if !strings.HasPrefix(url, "http") {
+		url = baseUrl + url
+	}
+	parsedUrl, err := u.Parse(url)
+	if err != nil {
+		return nil, err
+	}
+	query := parsedUrl.Query()
+	query.Set("per_page", fmt.Sprintf("%d", perPageDefault))
+	for key, value := range params {
+		query.Set(key, value)
+	}
+	parsedUrl.RawQuery = query.Encode()
+	stringUrl := parsedUrl.String()
+	return &stringUrl, nil
+}
+
 func GetEntity[T any](url string, entityName string) (*T, error) {
-	body, err := getRequest(url)
+	body, err := getRequest(url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +105,8 @@ func GetEntity[T any](url string, entityName string) (*T, error) {
 	return &entity, nil
 }
 
-func GetArray[T any](url string, groupName string) ([]T, error) {
-	body, err := getRequest(url)
+func GetCollection[T any](url string, groupName string, params map[string]string) ([]T, error) {
+	body, err := getRequest(url, params)
 	if err != nil {
 		return nil, err
 	}

@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	defaultAuthUrl     = "https://api.sandbox.freeagent.com/v2/approve_app"
-	defaultTokenUrl    = "https://api.sandbox.freeagent.com/v2/token_endpoint"
+	defaultAuthUrl     = "https://api.freeagent.com/v2/approve_app"
+	defaultTokenUrl    = "https://api.freeagent.com/v2/token_endpoint"
 	defaultRedirectUrl = "http://localhost:8080/callback"
 )
 
