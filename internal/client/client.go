@@ -33,11 +33,11 @@ func SaveToken() {
 	if client != nil {
 		token, err := client.tokenSource.Token()
 		if err != nil {
-			fmt.Println("Error storing token")
+			fmt.Println("Error retrieving token: %w", err)
 		}
 		err = auth.StoreToken(token)
 		if err != nil {
-			fmt.Println("Error storing token")
+			fmt.Println("Error storing token: %w", err)
 		}
 	}
 }
@@ -79,7 +79,7 @@ func getUrl(url string, params map[string]string) (*string, error) {
 	}
 	parsedUrl, err := u.Parse(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing url: %w", err)
 	}
 	query := parsedUrl.Query()
 	query.Set("per_page", fmt.Sprintf("%d", perPageDefault))
@@ -94,12 +94,12 @@ func getUrl(url string, params map[string]string) (*string, error) {
 func GetEntity[T any](url string, entityName string) (*T, error) {
 	body, err := getRequest(url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error making request: %w", err)
 	}
-	entityResponse := map[string]T{}
+	var entityResponse map[string]T
 	err = json.Unmarshal(body, &entityResponse)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error unmarshalling response: %w", err)
 	}
 	var entity = entityResponse[entityName]
 	return &entity, nil
@@ -108,12 +108,12 @@ func GetEntity[T any](url string, entityName string) (*T, error) {
 func GetCollection[T any](url string, groupName string, params map[string]string) ([]T, error) {
 	body, err := getRequest(url, params)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error making request: %w", err)
 	}
-	entityResponse := map[string][]T{}
+	var entityResponse map[string][]T
 	err = json.Unmarshal(body, &entityResponse)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error unmarshalling response: %w", err)
 	}
 	var entity = entityResponse[groupName]
 	return entity, nil
