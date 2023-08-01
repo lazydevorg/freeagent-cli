@@ -64,19 +64,23 @@ func Create(timeslip *Timeslip) (*Timeslip, error) {
 }
 
 func GetWeek() ([]Timeslip, error) {
-	now := time.Now().AddDate(0, 0, -10)
-	offset := int(time.Monday - now.Weekday())
+	from, to := weekRange(time.Now())
+	params := map[string]string{
+		"view":      "all",
+		"from_date": from.Format("2006-01-02"),
+		"to_date":   to.Format("2006-01-02"),
+	}
+	return client.GetCollection[Timeslip]("timeslips", "timeslips", params)
+}
+
+func weekRange(date time.Time) (time.Time, time.Time) {
+	offset := int(time.Monday - date.Weekday())
 	if offset > 0 {
 		offset = -6
 	}
-	firstDayOfWeek := now.AddDate(0, 0, offset)
-	lastDayOfWeek := firstDayOfWeek.AddDate(0, 0, 6)
-	params := map[string]string{
-		"view":      "all",
-		"from_date": firstDayOfWeek.Format("2006-01-02"),
-		"to_date":   lastDayOfWeek.Format("2006-01-02"),
-	}
-	return client.GetCollection[Timeslip]("timeslips", "timeslips", params)
+	from := date.AddDate(0, 0, offset)
+	to := from.AddDate(0, 0, 6)
+	return from, to
 }
 
 func PrintTable(timeslips []Timeslip, related map[string]string) {
