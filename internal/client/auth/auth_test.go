@@ -65,6 +65,7 @@ func sameToken(t1, t2 *oauth2.Token) bool {
 }
 
 func TestAuthenticate(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	var wg sync.WaitGroup
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
