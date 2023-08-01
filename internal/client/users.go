@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -15,10 +16,10 @@ type User struct {
 	CreatedAt       time.Time `json:"created_at"`
 }
 
-func PersonalProfile() (*User, error) {
-	return GetEntity[User]("users/me", "user")
+func (u User) String() string {
+	return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 }
 
-func GetAllUsers() ([]User, error) {
-	return GetCollection[User]("users", "users", nil)
+func PersonalProfile() (*User, error) {
+	return GetEntity[User]("users/me", "user")
 }
