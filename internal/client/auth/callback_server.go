@@ -33,7 +33,7 @@ func (s *CallbackServer) WaitForAuthCode() (string, error) {
 
 	go func() {
 		err := server.ListenAndServe()
-		if err != http.ErrServerClosed {
+		if !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalln("Error starting callback server:", err)
 		}
 	}()
