@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	u "net/url"
+	"reflect"
 	"strings"
 )
 
@@ -118,4 +120,46 @@ func GetCollection[T any](url string, groupName string, params map[string]string
 	}
 	var entity = entityResponse[groupName]
 	return entity, nil
+}
+
+func PostRequest(apiUrl string, data []byte) (*http.Response, error) {
+	url, err := getUrl(apiUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+	request, err := http.NewRequest("POST", *url, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	c := Singleton()
+	return c.Http.Do(request)
+}
+
+func PostEntity[T any](url string, name string, entity *T) (*T, error) {
+	data := map[string]*T{name: entity}
+	encoded, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling entity: %w", err)
+	}
+	response, err := PostRequest(url, encoded)
+	fmt.Println(response)
+	return nil, nil
+}
+
+type RelatedEntityProcessorFunc func(entity map[string]interface{}) string
+
+func GetRelatedEntities[E any](entities []E, entityFieldName string, related map[string]string, processorFunc RelatedEntityProcessorFunc) error {
+	for _, entity := range entities {
+		v := reflect.ValueOf(entity)
+		field := v.FieldByName(entityFieldName)
+		url := field.String()
+		if _, found := related[url]; !found {
+			re, err := GetEntity[map[string]interface{}](url, strings.ToLower(entityFieldName))
+			if err != nil {
+				return fmt.Errorf("error getting related entity: %w", err)
+			}
+			related[url] = processorFunc(*re)
+		}
+	}
+	return nil
 }
