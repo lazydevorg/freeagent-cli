@@ -13,6 +13,6 @@ func (p Project) String() string {
 	return p.Name
 }
 
-func GetActiveProjects() ([]Project, error) {
-	return GetCollection[Project]("projects?view=active", "projects", nil)
+func (c *Client) GetActiveProjects() ([]Project, error) {
+	return GetCollection[Project](c, "projects?view=active", "projects", nil)
 }

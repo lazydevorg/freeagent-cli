@@ -20,6 +20,6 @@ func (u User) String() string {
 	return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 }
 
-func PersonalProfile() (*User, error) {
-	return GetEntity[User]("users/me", "user")
+func (c *Client) PersonalProfile() (*User, error) {
+	return GetEntity[User](c, "users/me", "user")
 }

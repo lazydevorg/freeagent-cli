@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+type Client struct {
+	Client *client.Client
+}
+
+func Timeslips(c *client.Client) *Client {
+	return &Client{Client: c}
+}
+
 type Timeslip struct {
 	Url       string       `json:"url"`
 	Task      string       `json:"task"`
@@ -33,20 +41,20 @@ func (d *DatedOnField) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func GetRelated(timeslips []Timeslip, related map[string]string) error {
-	err := client.GetRelatedEntities(timeslips, "Project", related, func(entity map[string]interface{}) string {
+func (t *Client) GetRelated(timeslips []Timeslip, related map[string]string) error {
+	err := client.GetRelatedEntities(t.Client, timeslips, "Project", related, func(entity map[string]interface{}) string {
 		return entity["name"].(string)
 	})
 	if err != nil {
 		return fmt.Errorf("error getting related projects: %w", err)
 	}
-	err = client.GetRelatedEntities(timeslips, "Task", related, func(entity map[string]interface{}) string {
+	err = client.GetRelatedEntities(t.Client, timeslips, "Task", related, func(entity map[string]interface{}) string {
 		return entity["name"].(string)
 	})
 	if err != nil {
 		return fmt.Errorf("error getting related tasks: %w", err)
 	}
-	err = client.GetRelatedEntities(timeslips, "User", related, func(entity map[string]interface{}) string {
+	err = client.GetRelatedEntities(t.Client, timeslips, "User", related, func(entity map[string]interface{}) string {
 		return fmt.Sprintf("%s %s", entity["first_name"], entity["last_name"])
 	})
 	if err != nil {
@@ -55,22 +63,22 @@ func GetRelated(timeslips []Timeslip, related map[string]string) error {
 	return nil
 }
 
-func Create(timeslip *Timeslip) (*Timeslip, error) {
-	timeslip, err := client.PostEntity("timeslips", "timeslip", timeslip)
+func (t *Client) Create(timeslip *Timeslip) (*Timeslip, error) {
+	timeslip, err := client.PostEntity(t.Client, "timeslips", "timeslip", timeslip)
 	if err != nil {
 		return nil, err
 	}
 	return timeslip, nil
 }
 
-func GetWeek() ([]Timeslip, error) {
+func (t *Client) GetWeek() ([]Timeslip, error) {
 	from, to := weekRange(time.Now())
 	params := map[string]string{
 		"view":      "all",
 		"from_date": from.Format("2006-01-02"),
 		"to_date":   to.Format("2006-01-02"),
 	}
-	return client.GetCollection[Timeslip]("timeslips", "timeslips", params)
+	return client.GetCollection[Timeslip](t.Client, "timeslips", "timeslips", params)
 }
 
 func weekRange(date time.Time) (time.Time, time.Time) {
@@ -83,7 +91,7 @@ func weekRange(date time.Time) (time.Time, time.Time) {
 	return from, to
 }
 
-func PrintTable(timeslips []Timeslip, related map[string]string) {
+func (t *Client) PrintTable(timeslips []Timeslip, related map[string]string) {
 	tbl := table.New("Project", "Task", "User", "Date", "Hours")
 	for _, timeslip := range timeslips {
 		tbl.AddRow(related[timeslip.Project], related[timeslip.Task], related[timeslip.User], timeslip.DateOn.String(), timeslip.Hours)

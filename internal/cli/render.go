@@ -19,12 +19,3 @@ func RenderEntityTable(entity any) {
 	}
 	tbl.Print()
 }
-
-func RenderCollectionTable[T any](collection []T) {
-	if len(collection) == 0 {
-		return
-	}
-	for _, item := range collection {
-		RenderEntityTable(item)
-	}
-}

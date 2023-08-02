@@ -19,17 +19,11 @@ var baseUrl = "https://api.freeagent.com/v2/"
 
 type Client struct {
 	Http        *http.Client
+	BaseUrl     string
 	tokenSource oauth2.TokenSource
 }
 
 var client *Client
-
-func Singleton() *Client {
-	if client == nil {
-		client = newClient(context.Background())
-	}
-	return client
-}
 
 func SaveToken() {
 	if client != nil {
@@ -44,7 +38,7 @@ func SaveToken() {
 	}
 }
 
-func newClient(ctx context.Context) *Client {
+func NewClient(ctx context.Context) *Client {
 	token, err := auth.LoadToken()
 	if err != nil {
 		log.Fatalln("Error loading authentication data")
@@ -52,12 +46,13 @@ func newClient(ctx context.Context) *Client {
 	tokenSource := auth.OAuthConfig().TokenSource(ctx, token)
 	return &Client{
 		Http:        oauth2.NewClient(ctx, tokenSource),
+		BaseUrl:     baseUrl,
 		tokenSource: tokenSource,
 	}
 }
 
-func getRequest(apiUrl string, params map[string]string) ([]byte, error) {
-	url, err := getUrl(apiUrl, params)
+func (c *Client) getRequest(apiUrl string, params map[string]string) ([]byte, error) {
+	url, err := c.getUrl(apiUrl, params)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +60,6 @@ func getRequest(apiUrl string, params map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := Singleton()
 	response, err := c.Http.Do(request)
 	if err != nil {
 		return nil, err
@@ -76,9 +70,9 @@ func getRequest(apiUrl string, params map[string]string) ([]byte, error) {
 
 const perPageDefault = 5
 
-func getUrl(url string, params map[string]string) (*string, error) {
+func (c *Client) getUrl(url string, params map[string]string) (*string, error) {
 	if !strings.HasPrefix(url, "http") {
-		url = baseUrl + url
+		url = c.BaseUrl + url
 	}
 	parsedUrl, err := u.Parse(url)
 	if err != nil {
@@ -94,8 +88,8 @@ func getUrl(url string, params map[string]string) (*string, error) {
 	return &stringUrl, nil
 }
 
-func GetEntity[T any](url string, entityName string) (*T, error) {
-	body, err := getRequest(url, nil)
+func GetEntity[T any](c *Client, url string, entityName string) (*T, error) {
+	body, err := c.getRequest(url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error making request: %w", err)
 	}
@@ -108,8 +102,8 @@ func GetEntity[T any](url string, entityName string) (*T, error) {
 	return &entity, nil
 }
 
-func GetCollection[T any](url string, groupName string, params map[string]string) ([]T, error) {
-	body, err := getRequest(url, params)
+func GetCollection[T any](c *Client, url string, groupName string, params map[string]string) ([]T, error) {
+	body, err := c.getRequest(url, params)
 	if err != nil {
 		return nil, fmt.Errorf("error making request: %w", err)
 	}
@@ -122,8 +116,8 @@ func GetCollection[T any](url string, groupName string, params map[string]string
 	return entity, nil
 }
 
-func PostRequest(apiUrl string, data []byte) (*http.Response, error) {
-	url, err := getUrl(apiUrl, nil)
+func (c *Client) PostRequest(apiUrl string, data []byte) (*http.Response, error) {
+	url, err := c.getUrl(apiUrl, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -131,30 +125,29 @@ func PostRequest(apiUrl string, data []byte) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := Singleton()
 	return c.Http.Do(request)
 }
 
-func PostEntity[T any](url string, name string, entity *T) (*T, error) {
+func PostEntity[T any](c *Client, url string, name string, entity *T) (*T, error) {
 	data := map[string]*T{name: entity}
 	encoded, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling entity: %w", err)
 	}
-	response, err := PostRequest(url, encoded)
+	response, err := c.PostRequest(url, encoded)
 	fmt.Println(response)
 	return nil, nil
 }
 
 type RelatedEntityProcessorFunc func(entity map[string]interface{}) string
 
-func GetRelatedEntities[E any](entities []E, entityFieldName string, related map[string]string, processorFunc RelatedEntityProcessorFunc) error {
+func GetRelatedEntities[E any](c *Client, entities []E, entityFieldName string, related map[string]string, processorFunc RelatedEntityProcessorFunc) error {
 	for _, entity := range entities {
 		v := reflect.ValueOf(entity)
 		field := v.FieldByName(entityFieldName)
 		url := field.String()
 		if _, found := related[url]; !found {
-			re, err := GetEntity[map[string]interface{}](url, strings.ToLower(entityFieldName))
+			re, err := GetEntity[map[string]interface{}](c, url, strings.ToLower(entityFieldName))
 			if err != nil {
 				return fmt.Errorf("error getting related entity: %w", err)
 			}

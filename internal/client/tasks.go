@@ -13,6 +13,6 @@ func (t Task) String() string {
 	return t.Name
 }
 
-func GetActiveTasks() ([]Task, error) {
-	return GetCollection[Task]("tasks?view=active", "tasks", nil)
+func (c *Client) GetActiveTasks() ([]Task, error) {
+	return GetCollection[Task](c, "tasks?view=active", "tasks", nil)
 }

@@ -14,6 +14,6 @@ type Attachment struct {
 	Description      string    `json:"description"`
 }
 
-func GetAttachment(id string) (*Attachment, error) {
-	return GetEntity[Attachment]("attachments/"+id, "attachment")
+func (c *Client) GetAttachment(id string) (*Attachment, error) {
+	return GetEntity[Attachment](c, "attachments/"+id, "attachment")
 }
