@@ -29,12 +29,12 @@ func Test_weekRange(t *testing.T) {
 				t.Errorf("weekRange() error: %v", err)
 			}
 			from, to := weekRange(day)
-			from_string := from.Format("2006-1-2")
-			to_string := to.Format("2006-1-2")
-			if from_string != tt.from {
+			fromString := from.Format("2006-1-2")
+			toString := to.Format("2006-1-2")
+			if fromString != tt.from {
 				t.Errorf("weekRange(%s) from got = %v, want %v", tt.date, from, tt.from)
 			}
-			if to_string != tt.to {
+			if toString != tt.to {
 				t.Errorf("weekRange(%s) to got = %v, want %v", tt.date, to, tt.to)
 			}
 		})
