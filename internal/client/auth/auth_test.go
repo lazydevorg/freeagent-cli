@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"golang.org/x/oauth2"
 	"io"
 	"net/http"
@@ -92,7 +93,7 @@ func TestAuthenticate(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		_ = DeleteToken()
-		token := oAuthServer.Authenticate()
+		token := oAuthServer.Authenticate(context.Background())
 		if token == nil {
 			t.Error("Unexpected nil token")
 		}
