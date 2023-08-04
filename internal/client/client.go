@@ -20,6 +20,7 @@ var baseUrl = "https://api.freeagent.com/v2/"
 type Client struct {
 	Http        *http.Client
 	BaseUrl     string
+	BaseContext context.Context
 	tokenSource oauth2.TokenSource
 }
 
@@ -44,9 +45,12 @@ func NewClient(ctx context.Context) *Client {
 		log.Fatalln("Error loading authentication data")
 	}
 	tokenSource := auth.OAuthConfig().TokenSource(ctx, token)
+	newClient := oauth2.NewClient(ctx, tokenSource)
+
 	return &Client{
-		Http:        oauth2.NewClient(ctx, tokenSource),
+		Http:        newClient,
 		BaseUrl:     baseUrl,
+		BaseContext: ctx,
 		tokenSource: tokenSource,
 	}
 }

@@ -71,7 +71,7 @@ func (t *Client) Create(timeslip *Timeslip) (*Timeslip, error) {
 	return timeslip, nil
 }
 
-func (t *Client) GetWeek() ([]Timeslip, error) {
+func (t *Client) Week() ([]Timeslip, error) {
 	from, to := weekRange(time.Now())
 	params := map[string]string{
 		"view":      "all",
@@ -91,10 +91,18 @@ func weekRange(date time.Time) (time.Time, time.Time) {
 	return from, to
 }
 
-func (t *Client) PrintTable(timeslips []Timeslip, related map[string]string) {
+func (t *Client) PrintTable(timeslips []Timeslip, related map[string]string) error {
+	if related == nil {
+		related = make(map[string]string)
+	}
+	err := t.GetRelated(timeslips, related)
+	if err != nil {
+		return fmt.Errorf("error printing time tracking week table: %w", err)
+	}
 	tbl := table.New("Project", "Task", "User", "Date", "Hours")
 	for _, timeslip := range timeslips {
 		tbl.AddRow(related[timeslip.Project], related[timeslip.Task], related[timeslip.User], timeslip.DateOn.String(), timeslip.Hours)
 	}
 	tbl.Print()
+	return nil
 }

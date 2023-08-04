@@ -1,16 +1,13 @@
 package main
 
 import (
-	"context"
-	"github.com/lazydevorg/freeagent-cli/internal/client/auth"
-	"time"
+	"github.com/lazydevorg/freeagent-cli/cmd"
 )
 
 func main() {
-	//cmd.Execute()
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(2*time.Second))
-	defer cancel()
-	auth.Authenticate(ctx, true)
+	cmd.Execute()
+	//ctx := context.Background()
+	//auth.Authenticate(ctx, true)
 
 	//c := client.NewClient(context.Background())
 	//timeslips := timeslip.Timeslips(c)
