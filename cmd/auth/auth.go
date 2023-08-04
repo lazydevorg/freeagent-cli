@@ -11,7 +11,7 @@ var Cmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticate with FreeAgent",
 	Run: func(cmd *cobra.Command, args []string) {
-		auth.Authenticate(force)
+		auth.Authenticate(cmd.Context(), force)
 	},
 }
 

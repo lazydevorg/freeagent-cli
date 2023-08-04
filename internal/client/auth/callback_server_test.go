@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/base64"
 	"golang.org/x/oauth2"
 	"net/http"
@@ -33,7 +34,7 @@ func TestTokenExchange(t *testing.T) {
 				defer wg.Done()
 				server := NewCallbackServer(&config)
 				server.state = tt.serverState
-				code, _ := server.WaitForAuthCode()
+				code, _ := server.WaitForAuthCode(context.Background())
 				if code != tt.requestCode {
 					t.Error("Unexpected auth code:", code)
 				}

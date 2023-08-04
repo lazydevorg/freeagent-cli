@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"golang.org/x/oauth2"
 	"io"
 	"net/http"
@@ -65,6 +66,7 @@ func sameToken(t1, t2 *oauth2.Token) bool {
 }
 
 func TestAuthenticate(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	var wg sync.WaitGroup
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -91,7 +93,7 @@ func TestAuthenticate(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		_ = DeleteToken()
-		token := oAuthServer.Authenticate()
+		token := oAuthServer.Authenticate(context.Background())
 		if token == nil {
 			t.Error("Unexpected nil token")
 		}

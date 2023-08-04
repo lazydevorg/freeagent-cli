@@ -23,10 +23,10 @@ type BankTransationExplanation struct {
 	Attachment      Attachment `json:"attachment"`
 }
 
-func GetBankTransactionExplanation(id string) (*BankTransationExplanation, error) {
-	return GetEntity[BankTransationExplanation]("bank_transaction_explanations/"+id, "bank_transaction_explanation")
+func (c *Client) GetBankTransactionExplanation(id string) (*BankTransationExplanation, error) {
+	return GetEntity[BankTransationExplanation](c, "bank_transaction_explanations/"+id, "bank_transaction_explanation")
 }
 
-func GetBankTransactionExplanations(bankAccountUrl string) ([]BankTransationExplanation, error) {
-	return GetCollection[BankTransationExplanation]("bank_transaction_explanations?bank_account="+bankAccountUrl, "bank_transaction_explanations", nil)
+func (c *Client) GetBankTransactionExplanations(bankAccountUrl string) ([]BankTransationExplanation, error) {
+	return GetCollection[BankTransationExplanation](c, "bank_transaction_explanations?bank_account="+bankAccountUrl, "bank_transaction_explanations", nil)
 }

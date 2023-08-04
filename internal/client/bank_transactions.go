@@ -19,10 +19,10 @@ type BankTransaction struct {
 	BankTransactionExplanations []BankTransationExplanation `json:"bank_transaction_explanations"`
 }
 
-func GetBankTransactions(bankAccountId string) ([]BankTransaction, error) {
-	return GetCollection[BankTransaction]("bank_transactions?bank_account="+bankAccountId, "bank_transactions", nil)
+func (c *Client) GetBankTransactions(bankAccountId string) ([]BankTransaction, error) {
+	return GetCollection[BankTransaction](c, "bank_transactions?bank_account="+bankAccountId, "bank_transactions", nil)
 }
 
-func GetBankTransaction(id string) (*BankTransaction, error) {
-	return GetEntity[BankTransaction]("bank_transactions/"+id, "bank_transaction")
+func (c *Client) GetBankTransaction(id string) (*BankTransaction, error) {
+	return GetEntity[BankTransaction](c, "bank_transactions/"+id, "bank_transaction")
 }

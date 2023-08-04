@@ -15,16 +15,16 @@ type BankAccount struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
-func GetBankAccounts() ([]BankAccount, error) {
-	bankAccounts, err := GetCollection[BankAccount]("bank_accounts", "bank_accounts", nil)
+func (c *Client) GetBankAccounts() ([]BankAccount, error) {
+	bankAccounts, err := GetCollection[BankAccount](c, "bank_accounts", "bank_accounts", nil)
 	if err != nil {
 		return nil, err
 	}
 	return bankAccounts, nil
 }
 
-func GetBankAccount(id string) (*BankAccount, error) {
-	bankAccount, err := GetEntity[BankAccount]("bank_accounts/"+id, "bank_account")
+func (c *Client) GetBankAccount(id string) (*BankAccount, error) {
+	bankAccount, err := GetEntity[BankAccount](c, "bank_accounts/"+id, "bank_account")
 	if err != nil {
 		return nil, err
 	}

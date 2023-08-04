@@ -1,25 +1,25 @@
 package whoami
 
 import (
-	"fmt"
+	"github.com/lazydevorg/freeagent-cli/internal/cli"
 	"github.com/lazydevorg/freeagent-cli/internal/client"
 	"github.com/lazydevorg/freeagent-cli/internal/client/auth"
 	"github.com/spf13/cobra"
 )
 
 var Cmd = &cobra.Command{
-	Use:     "whoami",
-	Short:   "Get the current user",
-	Example: "# freeagent whoami\nYou are logged in as John Smith (Director)",
-	Args:    cobra.NoArgs,
+	Use:   "whoami",
+	Short: "Get the current user",
+	Args:  cobra.NoArgs,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		auth.Authenticate(false)
+		auth.Authenticate(cmd.Context(), false)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		profile, err := client.PersonalProfile()
+		c := client.NewClient(cmd.Context())
+		profile, err := c.PersonalProfile()
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("You are logged in as %s %s (%s)", profile.FirstName, profile.LastName, profile.Role)
+		cli.RenderEntityTable(profile)
 	},
 }
