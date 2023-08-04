@@ -12,7 +12,7 @@ var Cmd = &cobra.Command{
 	Short: "Get the current user",
 	Args:  cobra.NoArgs,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		auth.Authenticate(false)
+		auth.Authenticate(cmd.Context(), false)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		c := client.NewClient(cmd.Context())
